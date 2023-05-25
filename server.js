@@ -26,19 +26,27 @@ res.render('index', {scissorsUrl: scissorsUrl})
 
 app.post('/scissorsUrl', async(req, res) => {
 await scissors.create({ fullUrl: req.body.fullUrl})  //creating a new short url
+
 res.redirect('/')  //then redirect back to the homepage when done.
 })
 
 app.get('/:scissors', async (req, res) => {
- const scissors = await scissors.findOne({shortUrl: req.params.scissors})
+ const scissor = await scissors.findOne({scissors: req.params.scissors})
 
  //when user enters url that doesn't exist
- if (scissors == null) return res.sendStatus(404)
+ if (scissor == null)
+    return res.sendStatus(404)
 
- scissors.clicks++
- shortUrl.save()
+ scissor.clicks++
+ scissor.save()
 
  res.redirect(scissors.fullUrl)
 })
 
-app.listen(process.env.PORT || 8000);
+//mongodb should be connected before server starts
+mongoose.connection.on('open', () => {
+app.listen(process.env.PORT || 8000, () => {
+    console.log("Server started")
+});
+
+})
