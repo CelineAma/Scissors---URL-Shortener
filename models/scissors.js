@@ -12,13 +12,13 @@ const scissorsSchema = new mongoose.Schema({
 
     shortUrl: {
         type: String,
-        date: {type: String, default: Date.now},
+        date: {default: Date.now},
         required: true,
         default: shortId.generate
     },
 
     clicks: {
-        type: String,
+        type: Number,
         required: true,
         default: 0
     }

@@ -2,6 +2,8 @@ const express = require("express");
 const mongoose = require ("mongoose")
 const scissors = require('./models/scissors')
 const dotenv = require("dotenv")
+const morgan = require("morgan")
+
 const app = express();
 
 dotenv.config()
@@ -20,6 +22,10 @@ app.set('view engine', 'ejs')
 app.use(express.urlencoded({extended: false}))
 
 
+// Logging middleware
+app.use(morgan('dev'));
+
+
 //creating the route endpoint 
 app.get('/', async (req, res) => {
    const scissorsUrl = await scissors.find()
@@ -33,16 +39,17 @@ res.redirect('/')  //then redirect back to the homepage when done.
 })
 
 app.get('/:scissors', async (req, res) => {
- const scissor = await scissors.findOne({scissors: req.params.scissors})
+ const scissor = await scissors.findOne({shortUrl: req.params.scissors})
 
  //when user enters url that doesn't exist
- if (scissor == null)
-    return res.sendStatus(404)
+ if (scissor === null){
+    return res.status(404).send("Short URL not found");
+ }
 
  scissor.clicks++
- scissor.save()
+ await scissor.save()
 
- res.redirect(scissors.fullUrl)
+ res.redirect(scissor.fullUrl)
 })
 
 //mongodb should be connected before server starts
