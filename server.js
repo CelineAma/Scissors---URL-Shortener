@@ -19,6 +19,8 @@ app.set('view engine', 'ejs')
 //set app for url parameters
 app.use(express.urlencoded({extended: false}))
 
+
+//creating the route endpoint 
 app.get('/', async (req, res) => {
    const scissorsUrl = await scissors.find()
 res.render('index', {scissorsUrl: scissorsUrl})
@@ -46,7 +48,7 @@ app.get('/:scissors', async (req, res) => {
 //mongodb should be connected before server starts
 mongoose.connection.on('open', () => {
 app.listen(process.env.PORT || 8000, () => {
-    console.log("Server started")
+    console.log("Server started and MongoDB connected successfully")
 });
 
 })

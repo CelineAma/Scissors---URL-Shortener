@@ -6,11 +6,13 @@ shortId.generate()
 const scissorsSchema = new mongoose.Schema({
     fullUrl: {
         type: String,
+        date: {type: String, default: Date.now},
         required: true
     },
 
     shortUrl: {
         type: String,
+        date: {type: String, default: Date.now},
         required: true,
         default: shortId.generate
     },
