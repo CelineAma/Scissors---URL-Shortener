@@ -16,12 +16,21 @@
 
     <h1 class="text-center">Scissors - URL Shortener</h1>
 
+    <!-- Input form (Post method) -->
+
     <form action="/scissorsUrl" method="POST" class="my-4 form-inline">
     <label for="fullUrl" class="sr-only"> URL </label>
     <input type="url" name="fullUrl" id="fullUrl" class="form-control col mr-2" placeholder="Enter the URL here..." required>
     <button type="submit" class="btn btn-success">Scissor</button>
     </form>
 
+    <!-- Search form (Get Method) -->
+    <form id="searchForm" action="/" method="GET" class="my-4 form-inline">
+        <input id="searchQuery" type="text" name="search" placeholder="Search URLs" class="form-control col mr-2">
+        <button type="submit" class="btn btn-primary">Search</button>
+    </form>
+
+    <div id="page-content">
     <table class="table table-striped table-responsive">
         <thead>
             <tr>
@@ -44,6 +53,64 @@
             <% }) %> 
         </tbody>
     </table>
+
+ <!-- Pagination controls -->
+ <nav aria-label="Pagination">
+    <ul class="pagination">
+      <% if (currentPage > 1) { %>
+        <li class="page-item">
+          <a class="page-link" href="/?page=<%= currentPage - 1 %>" aria-label="Previous">
+            <span aria-hidden="true">&laquo;</span>
+          </a>
+        </li>
+      <% } %>
+
+      <% for (let i = 1; i <= totalPages; i++) { %>
+        <li class="page-item <%= i === currentPage ? 'active' : '' %>">
+          <a class="page-link" href="/?page=<%= i %>"><%= i %></a>
+        </li>
+      <% } %>
+
+      <% if (currentPage < totalPages) { %>
+        <li class="page-item">
+          <a class="page-link" href="/?page=<%= currentPage + 1 %>" aria-label="Next">
+            <span aria-hidden="true">&raquo;</span>
+          </a>
+        </li>
+      <% } %>
+    </ul>
+  </nav>
+
 </div>
+
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+
+// Add event listeners to pagination links or buttons
+$('.pagination').on('click', '.page-link', function(event) {
+  event.preventDefault(); // Prevent the default link behavior
+
+  const searchQuery = document.getElementById('searchQuery').value;
+
+  // Get the page number from the clicked link
+  const page = $(this).attr('href').split('=')[1];
+
+  // Make an AJAX request to the server with the appropriate page number
+  $.ajax({
+    url: `/?page=${page}`,
+    type: 'GET',
+    success: function(response) {
+      // Update the page content with the retrieved URLs
+      $('#page-content').html(response);
+    },
+    error: function(xhr, status, error) {
+      console.error('Error retrieving URLs:', error);
+    }
+  });
+});
+</script>
 </body>
 </html>
