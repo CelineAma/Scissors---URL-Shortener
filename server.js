@@ -25,6 +25,27 @@ app.use(express.urlencoded({extended: false}))
 // Logging middleware
 app.use(morgan('dev'));
 
+app.use((err, req, res, next) => {
+    let errorMessage = "Internal Server Error";
+    let statusCode = 500;
+  
+    // Check the type of error and customize the error message and status code
+    if (err instanceof mongoose.Error.ValidationError) {
+      errorMessage = "Validation Error";
+      statusCode = 400;
+    } else if (err instanceof mongoose.Error.CastError) {
+      errorMessage = "Invalid ID";
+      statusCode = 400;
+    } else if (err.status === 404) {
+      errorMessage = "Not Found";
+      statusCode = 404;
+    }
+  
+    // Render the error.ejs template with the error message
+    res.status(statusCode).render('error', { errorMessage });
+  });
+  
+
 
 //creating the route endpoint
 //search functionality(get method) 
@@ -57,39 +78,149 @@ try {
 
   const totalCount = await scissors.countDocuments(query);
 
-  const allUrls = await scissors.find(query).skip(startIndex).limit(perPage);
-  const scissorsUrl = allUrls.slice(startIndex, endIndex);
-//   const scissorsUrl = await scissors.find().skip(startIndex).limit(perPage);
-
 
 // Filter the URLs based on the search query
-const filteredUrls = allUrls.filter(url => url.fullUrl.includes(searchQuery));
+// const filteredUrls = allUrls.filter(url => url.fullUrl.includes(searchQuery));
+
+
+// Sorting logic criteria (fullUrl, shortUrl and Clicks)
+const sortCriteria = req.query.sort || ''; // Get the selected sorting criteria from the query parameter
+
+let sortOptions = {};
+
+    if (sortCriteria === 'fullUrl') {
+      sortOptions = { fullUrl: 1 }; // Sort by fullUrl ascending
+    } else if (sortCriteria === 'shortUrl') {
+      sortOptions = { shortUrl: 1 }; // Sort by shortUrl ascending
+    } else if (sortCriteria === 'clicks') {
+      sortOptions = { clicks: -1 }; // Sort by clicks descending
+    }
+
+const allUrls = await scissors.find(query).sort(sortOptions);
+const totalPages = Math.ceil(totalCount / perPage);
+const scissorsUrl = allUrls.slice(startIndex, endIndex);
+//   const scissorsUrl = await scissors.find().skip(startIndex).limit(perPage);
+
+// Retrieve the filter criteria from the query parameters
+const filterCriteria = req.query.filterCriteria;
+
+// Build the filter query based on the selected criteria
+let filterQuery = {};
+
+if (filterCriteria === 'fullUrl') {
+    filterQuery = { /* Add filter condition for fullUrl */ };
+} else if (filterCriteria === 'shortUrl') {
+    filterQuery = { /* Add filter condition for shortUrl */ };
+} else if (filterCriteria === 'clicks') {
+    filterQuery = { /* Add filter condition for clicks */ };
+}
+
+// Retrieve the filtered URLs from the database
+const filteredUrls = await scissors.find(filterQuery);
+
 
 
 // Pass the retrieved URLs and pagination information to the index.ejs template
   res.render('index', { 
     scissorsUrl: scissorsUrl, 
     currentPage: page, 
-    totalPages: Math.ceil(allUrls.length / perPage),
+    totalPages: totalPages,
     searchQuery: searchQuery,
+    selectedSort: sortCriteria,
+    filteredUrls: filteredUrls, // Add filteredUrls to the render parameters
+  filterCriteria: filterCriteria, // Pass the filter criteria to the render parameters
+    errorMessage: null, // Initialize the errorMessage variable with null
 });
     
 }
 catch (err) {
   // Handle any errors that occur during the retrieval
   console.error('Error retrieving URLs:', err);
-  res.status(500).send("Internal Server Error"); // Internal Server Error
+  res.status(500).render('index', {
+    scissorsUrl: [],
+    currentPage: 1,
+    totalPages: 1,
+    searchQuery: searchQuery,
+    selectedSort: sortCriteria,
+    filteredUrls: filteredUrls, // Add filteredUrls to the render parameters
+  filterCriteria: filterCriteria, // Pass the filter criteria to the render parameters
+    errorMessage: 'Error retrieving URLs. Please try again later.', // Set the error message; Internal Server Error
+});
 }
 });
 
 
-//Update Full URLs
+// Function to generate a unique short URL
+function generateShortUrl() {
+    const characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const length = 8;
+    let shortUrl = '';
+    
+    for (let i = 0; i < length; i++) {
+      const randomIndex = Math.floor(Math.random() * characters.length);
+      shortUrl += characters.charAt(randomIndex);
+    }
+    
+    return shortUrl;
+  }
+  
+
+
+//Update custom URLs (Creating new short url)
 app.post('/scissorsUrl', async(req, res) => {
-await scissors.create({ fullUrl: req.body.fullUrl})  //creating a new short url
+// await scissors.create({ fullUrl: req.body.fullUrl})  
+//creating a new short url
+
+const { fullUrl, customUrl } = req.body;
+
+  try {
+// Generate a unique custom URL
+const uniqueCustomUrl = await generateUniqueCustomUrl(customUrl);
+
+    // Check if the custom URL is already taken
+    const existingUrl = await scissors.findOne({ customUrl: uniqueCustomUrl });
+    if (existingUrl) {
+
+        console.log('Custom URL conflict. Generated unique custom URL:', uniqueCustomUrl);
+    // Use the generated unique custom URL instead
+      return res.status(400).json({ error: 'Custom URL already taken', uniqueCustomUrl });
+    }
+
+    // Generate a new shortened URL
+    const shortUrl = generateShortUrl();
+
+    // Create a new instance of the scissors model
+    const newUrl = new scissors({
+        fullUrl,
+        shortUrl,
+        customUrl: uniqueCustomUrl, // Store the custom URL in the database
+      });
+  
+      // Save the new URL to the database
+      await newUrl.save();
+  
 
 res.redirect('/')  //then redirect back to the homepage when done.
-})
+} catch (error) {
+    console.error('Error creating new URL:', error);
+    res.status(500).json({ error: 'Failed to create shortened URL' });
+  }
+});
 
+
+// Function to generate a unique custom URL by appending a suffix
+async function generateUniqueCustomUrl(customUrl) {
+    let newCustomUrl = customUrl;
+    let counter = 1;
+    while (await scissors.findOne({ customUrl: newCustomUrl })) {
+      newCustomUrl = `${customUrl}-${counter}`;
+      counter++;
+    }
+    return newCustomUrl;
+  }
+
+
+//GET urls
 app.get('/:scissors', async (req, res) => {
  const scissor = await scissors.findOne({shortUrl: req.params.scissors})
 

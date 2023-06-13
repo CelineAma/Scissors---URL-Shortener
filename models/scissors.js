@@ -21,7 +21,12 @@ const scissorsSchema = new mongoose.Schema({
         type: Number,
         required: true,
         default: 0
-    }
+    },
+
+    customUrl: {
+        type: String,
+        unique: true,
+      },
 })
 
 module.exports = mongoose.model('scissors', scissorsSchema)
