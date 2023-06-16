@@ -23,7 +23,6 @@ app.set('view engine', 'ejs')
 //set app for url parameters
 app.use(express.urlencoded({extended: false}))
 
-
 // Logging middleware
 app.use(morgan('dev'));
 
@@ -80,7 +79,6 @@ try {
 
   const totalCount = await scissors.countDocuments(query);
 
-
 // Filter the URLs based on the search query
 // const filteredUrls = allUrls.filter(url => url.fullUrl.includes(searchQuery));
 
@@ -122,6 +120,8 @@ const filteredUrls = await scissors.find(filterQuery);
 
 console.log('scissors:', scissors);
 
+console.log(scissorsUrl.scissors, "clicked");
+
 // Pass the retrieved URLs and pagination information to the index.ejs template
   res.render('index', { 
     scissorsUrl: scissorsUrl, 
@@ -130,8 +130,8 @@ console.log('scissors:', scissors);
     searchQuery: searchQuery,
     selectedSort: sortCriteria,
     filteredUrls: filteredUrls, // Add filteredUrls to the render parameters
-  filterCriteria: filterCriteria, // Pass the filter criteria to the render parameters
-  scissors: scissors,
+   filterCriteria: filterCriteria, // Pass the filter criteria to the render parameters
+   scissors: scissors,
     errorMessage: null, // Initialize the errorMessage variable with null
 });
     
@@ -234,7 +234,6 @@ const uniqueCustomUrl = await generateUniqueCustomUrl(customUrl);
   
       // Save the new URL to the database
       await newUrl.save();
-  
 
 res.redirect('/')  //then redirect back to the homepage when done.
 } catch (error) {
@@ -256,7 +255,7 @@ async function generateUniqueCustomUrl(customUrl) {
   }
 
 
-//GET urls
+//GET short urls
 app.get('/:scissors', async (req, res) => {
  const scissor = await scissors.findOne({shortUrl: req.params.scissors})
 

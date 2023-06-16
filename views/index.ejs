@@ -71,7 +71,7 @@
 <!--QR Code generation section-->
 <div class="qr-section">
     <h2>QR Code Generator</h2>
-    <form id="qrForm" action="/qr/<%= scissors.shortUrl %>" method="GET">
+    <form id="qrForm" action="/qr/<%= scissorsUrl.shortUrl %>" method="GET">
         <div class="form-group">
             <label for="urlInput">Enter URL:</label>
             <input type="text" id="urlInput" name="url" class="form-control" placeholder="Enter URL here" required>
@@ -167,18 +167,23 @@
       event.preventDefault(); // Prevent the form from submitting normally
   
       // Get the action URL from the form
-      const action = this.getAttribute('action');
+    //   const action = this.getAttribute('action');
+
+      const inputUrl = document.getElementById("urlInput")
+      console.log(inputUrl.value)
+
+      const action = `http://localhost:8000/qr/${inputUrl.value}`;
   
-      // Create a hidden iframe element to trigger the download
+      // Create a visible iframe element to trigger the download
       const iframe = document.createElement('iframe');
-      iframe.style.display = 'none';
+      iframe.style.display = 'block';
       iframe.src = action;
       document.body.appendChild(iframe);
   
       // Remove the iframe after the download is triggered
-      iframe.onload = function () {
-        document.body.removeChild(iframe);
-      };
+    //   iframe.onload = function () {
+    //     document.body.removeChild(iframe);
+    //   };
     });
   </script>
 
