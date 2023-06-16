@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="custom.css">
     <title>Scissors</title>
 </head>
-<body>
+<body style="background-color: #FFF7D6;">
 
 <nav>
     <!-- Add an icon to the navigation menu -->
@@ -30,7 +30,7 @@
 
 <div class="container">
 
-    <h1 class="text-center">Scissors - URL Shortener</h1>
+    <h1 class="text-center" style="color: #283618;">Scissors - URL Shortener</h1>
 
     <!-- Input form (Post method) -->
 
@@ -68,7 +68,19 @@
     <button type="submit" class="btn btn-primary">Filter</button>
 </form>
 
-    <div id="page-content">
+<!--QR Code generation section-->
+<div class="qr-section">
+    <h2>QR Code Generator</h2>
+    <form id="qrForm" action="/qr/<%= scissors.shortUrl %>" method="GET">
+        <div class="form-group">
+            <label for="urlInput">Enter URL:</label>
+            <input type="text" id="urlInput" name="url" class="form-control" placeholder="Enter URL here" required>
+          </div>
+      <button type="submit" class="btn btn-primary qr-button" style="margin-bottom: 20px; background-color: #f00; border: #f00;">Generate QR Code</button>
+    </form>
+  </div>
+
+<div id="page-content">
     <table class="table table-striped table-responsive">
         <thead>
             <tr>
@@ -107,6 +119,7 @@
         </tbody>
     </table>
 
+
  <!-- Pagination controls -->
  <nav aria-label="Pagination">
     <ul class="pagination">
@@ -142,14 +155,34 @@
     </div>
   <% } %>
 
-
 </div>
+
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js" crossorigin="anonymous"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
+<!-- JavaScript code for QR code generation -->
 <script>
+    document.getElementById('qrForm').addEventListener('submit', function (event) {
+      event.preventDefault(); // Prevent the form from submitting normally
+  
+      // Get the action URL from the form
+      const action = this.getAttribute('action');
+  
+      // Create a hidden iframe element to trigger the download
+      const iframe = document.createElement('iframe');
+      iframe.style.display = 'none';
+      iframe.src = action;
+      document.body.appendChild(iframe);
+  
+      // Remove the iframe after the download is triggered
+      iframe.onload = function () {
+        document.body.removeChild(iframe);
+      };
+    });
+  </script>
 
+<script>
 // Add event listeners to pagination links or buttons
 $('.pagination').on('click', '.page-link', function(event) {
   event.preventDefault(); // Prevent the default link behavior

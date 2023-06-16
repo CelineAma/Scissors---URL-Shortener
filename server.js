@@ -3,6 +3,8 @@ const mongoose = require ("mongoose")
 const scissors = require('./models/scissors')
 const dotenv = require("dotenv")
 const morgan = require("morgan")
+const axios = require('axios');
+const fs = require('fs');
 
 const app = express();
 
@@ -118,7 +120,7 @@ if (filterCriteria === 'fullUrl') {
 // Retrieve the filtered URLs from the database
 const filteredUrls = await scissors.find(filterQuery);
 
-
+console.log('scissors:', scissors);
 
 // Pass the retrieved URLs and pagination information to the index.ejs template
   res.render('index', { 
@@ -129,6 +131,7 @@ const filteredUrls = await scissors.find(filterQuery);
     selectedSort: sortCriteria,
     filteredUrls: filteredUrls, // Add filteredUrls to the render parameters
   filterCriteria: filterCriteria, // Pass the filter criteria to the render parameters
+  scissors: scissors,
     errorMessage: null, // Initialize the errorMessage variable with null
 });
     
@@ -144,10 +147,12 @@ catch (err) {
     selectedSort: sortCriteria,
     filteredUrls: filteredUrls, // Add filteredUrls to the render parameters
   filterCriteria: filterCriteria, // Pass the filter criteria to the render parameters
+  scissors: scissors,
     errorMessage: 'Error retrieving URLs. Please try again later.', // Set the error message; Internal Server Error
 });
 }
 });
+
 
 
 // Function to generate a unique short URL
@@ -162,7 +167,38 @@ function generateShortUrl() {
     }
     
     return shortUrl;
-  }
+  };
+
+
+  // Generate QR code and provide download option
+app.get('/qr/:scissors', async (req, res) => {
+    try {
+      const scissor = await scissors.findOne({ shortUrl: req.params.scissors });
+  
+      // When the short URL doesn't exist
+      if (scissor === null) {
+        return res.status(404).send('Short URL not found');
+      }
+  
+      const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(
+        scissor.fullUrl
+      )}&size=300x300`;
+
+      const response = await axios.get(qrCodeUrl, { responseType: 'stream' });
+    
+  
+      // Set the response headers for downloading the QR code image
+      res.setHeader('Content-Type', 'image/png');
+      res.setHeader('Content-Disposition', `attachment; filename=${scissor.shortUrl}.png`);
+  
+      // Pipe the image stream to the response object
+      response.data.pipe(res);
+    } catch (error) {
+      console.error('Error generating QR code:', error);
+      res.status(500).send('Failed to generate QR code');
+    }
+  });
+  
   
 
 

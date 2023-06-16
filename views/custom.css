@@ -13,7 +13,7 @@ body {
   }
   
   h1 {
-    color: var(--primary-color);
+    color: #283618;
     font-size: 24px;
   }
   
@@ -33,11 +33,17 @@ body {
   }
   
   a {
-    color: #007bff;
+    color: #606c38;
     text-decoration: none;
   }
   
   a:hover {
     text-decoration: underline;
   }
+
+  .qr-button {
+    margin-bottom: 40px;
+    background-color: #f00;
+  }
+  
   
