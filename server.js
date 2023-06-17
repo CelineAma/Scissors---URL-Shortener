@@ -5,6 +5,7 @@ const dotenv = require("dotenv")
 const morgan = require("morgan")
 const axios = require('axios');
 const fs = require('fs');
+const methodOverride = require('method-override');
 
 const app = express();
 
@@ -26,6 +27,9 @@ app.use(express.urlencoded({extended: false}))
 // Logging middleware
 app.use(morgan('dev'));
 
+// Enable method override for DELETE functionality
+app.use(methodOverride('_method'));
+
 app.use((err, req, res, next) => {
     let errorMessage = "Internal Server Error";
     let statusCode = 500;
@@ -46,7 +50,6 @@ app.use((err, req, res, next) => {
     res.status(statusCode).render('error', { errorMessage });
   });
   
-
 
 //creating the route endpoint
 //search functionality(get method) 
@@ -81,7 +84,6 @@ try {
 
 // Filter the URLs based on the search query
 // const filteredUrls = allUrls.filter(url => url.fullUrl.includes(searchQuery));
-
 
 // Sorting logic criteria (fullUrl, shortUrl and Clicks)
 const sortCriteria = req.query.sort || ''; // Get the selected sorting criteria from the query parameter
@@ -269,6 +271,32 @@ app.get('/:scissors', async (req, res) => {
 
  res.redirect(scissor.fullUrl)
 })
+
+
+// DELETE route to handle URL deletion
+app.delete('/urls/:shortUrl', async (req, res) => {
+  const shortUrl = req.params.shortUrl;
+
+  try {
+    // Find the URL in the database
+    const url = await scissors.findOne({ shortUrl });
+
+    // If the URL doesn't exist, return a 404 error
+    if (!url) {
+      return res.status(404).json({ error: 'URL not found' });
+    }
+
+    // Perform the deletion logic
+    await url.remove();
+
+    // Return a response indicating success
+    res.json({ message: 'URL deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting URL:', error);
+    res.status(500).json({ error: 'Failed to delete URL' });
+  }
+});
+
 
 //mongodb should be connected before server starts
 mongoose.connection.on('open', () => {
