@@ -115,8 +115,8 @@
                 <td> <a href="<%= scissors.shortUrl %>"><%= scissors.shortUrl %></a></td>
                 <td> <%= scissors.clicks %> </td>
                 <td>
-                  <!-- Form for deleting URLs -->
-                  <form action="/urls/<%= scissors.shortUrl %>?_method=DELETE" method="POST" class="delete-form">
+      <!-- Form for deleting URLs -->
+                  <form action="/urls/<%= scissorsUrl[i].shortUrl %>?_method=DELETE" method="POST" class="delete-form">
                     <button type="submit" class="btn btn-danger">Delete</button>
                   </form>     
                 </td>

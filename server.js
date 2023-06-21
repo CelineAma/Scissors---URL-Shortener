@@ -120,9 +120,9 @@ if (filterCriteria === 'fullUrl') {
 // Retrieve the filtered URLs from the database
 const filteredUrls = await scissors.find(filterQuery);
 
-console.log('scissors:', scissors);
+// console.log('scissors:', scissors);
 
-console.log(scissorsUrl.scissors, "clicked");
+// console.log(scissorsUrl.scissors, "clicked");
 
 // Pass the retrieved URLs and pagination information to the index.ejs template
   res.render('index', { 
@@ -134,6 +134,7 @@ console.log(scissorsUrl.scissors, "clicked");
     filteredUrls: filteredUrls, // Add filteredUrls to the render parameters
    filterCriteria: filterCriteria, // Pass the filter criteria to the render parameters
    scissors: scissors,
+   i: 0,
     errorMessage: null, // Initialize the errorMessage variable with null
 });
     
@@ -283,14 +284,17 @@ app.delete('/urls/:shortUrl', async (req, res) => {
 
     // If the URL doesn't exist, return a 404 error
     if (!url) {
-      return res.status(404).json({ error: 'URL not found' });
+      return res.redirect('/');
     }
 
     // Perform the deletion logic
-    await url.remove();
+    await scissors.deleteOne({ shortUrl });
 
-    // Return a response indicating success
-    res.json({ message: 'URL deleted successfully' });
+    // Redirect to the homepage after successful deletion
+    res.redirect('/');
+
+    // // Return a response indicating success
+    // res.json({ message: 'URL deleted successfully' });
   } catch (error) {
     console.error('Error deleting URL:', error);
     res.status(500).json({ error: 'Failed to delete URL' });
