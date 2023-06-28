@@ -2,9 +2,9 @@
 apis:
   main@v1:
     root: ./openapi/openapi.yaml
-lint:
+styleguide:
   rules:
-    example-rule-name: error
+    no-invalid-media-type-examples: error
 theme.openapi:
   pagination: section
   showConsole: true
