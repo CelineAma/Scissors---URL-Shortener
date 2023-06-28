@@ -5,7 +5,7 @@ apis:
 lint:
   rules:
     example-rule-name: error
-features.openapi:
+theme.openapi:
   pagination: section
   showConsole: true
   theme:
