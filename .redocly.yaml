@@ -2,6 +2,7 @@
 apis:
   main@v1: ./openapi/openapi.yaml
   root: ./openapi/openapi.yaml
+  styleguide:
   rules:
     no-invalid-media-type-examples: error
     allowAdditionalProperties: true
