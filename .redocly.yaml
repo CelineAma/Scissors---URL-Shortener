@@ -5,9 +5,12 @@ apis:
 styleguide:
   rules:
     no-invalid-media-type-examples: error
+    allowAdditionalProperties: true
 theme.openapi:
   pagination: section
   showConsole: true
   theme:
-    menu:
-      backgroundColor: '#fffff'
+    openapi: {}
+    mockServer: {}
+  menu:
+  backgroundColor: '#fffff'
