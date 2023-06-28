@@ -1,6 +1,6 @@
 
 apis:
-  main@v1:
+  main@v1: ./openapi/openapi.yaml
     root: ./openapi/openapi.yaml
 styleguide:
   rules:
