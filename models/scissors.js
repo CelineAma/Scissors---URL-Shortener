@@ -1,37 +1,38 @@
-const mongoose = require('mongoose')
-const shortId = require('shortid')
+const mongoose = require("mongoose");
 
-shortId.generate()
+const ObjectId = mongoose.Schema.Types.ObjectId;
 
-const scissorsSchema = new mongoose.Schema({
+const scissorsSchema = new mongoose.Schema(
+  {
     fullUrl: {
-        type: String,
-        date: {type: String, default: Date.now},
-        required: true
+      type: String,
+      required: true,
+      unique: true,
     },
 
     shortUrl: {
-        type: String,
-        date: {default: Date.now},
-        required: true,
-        default: shortId.generate
+      type: String,
+      required: true,
+      unique: true,
     },
 
-    userId: { 
-        type: String, 
-        default: ''
+    userId: {
+      type: ObjectId,
+      required: true,
     },
 
     clicks: {
-        type: Number,
-        required: true,
-        default: 0
+      type: Number,
+      required: true,
+      default: 0,
     },
 
     customUrl: {
-        type: String,
-        unique: true,
-      },
-})
+      type: String,
+      unique: true,
+    },
+  },
+  { timestamps: {} }
+);
 
-module.exports = mongoose.model('scissors', scissorsSchema)
+module.exports = mongoose.model("scissors", scissorsSchema);
