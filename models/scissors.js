@@ -17,6 +17,11 @@ const scissorsSchema = new mongoose.Schema({
         default: shortId.generate
     },
 
+    userId: { 
+        type: String, 
+        default: ''
+    },
+
     clicks: {
         type: Number,
         required: true,
