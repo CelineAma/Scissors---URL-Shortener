@@ -3,22 +3,24 @@ const dotenv = require("dotenv");
 dotenv.config();
 const express = require("express");
 const mongoose = require("mongoose");
-const scissors = require("./models/scissors");
-const connectToMongoDB = require("./config/db");
-
+const QRCode = require("qrcode");
 const morgan = require("morgan");
 const shortId = require("shortid");
 const { v4: uuidv4 } = require("uuid");
 const cookieParser = require("cookie-parser");
-const axios = require("axios");
-const fs = require("fs");
 const methodOverride = require("method-override");
 const rateLimit = require("express-rate-limit");
+
+const scissors = require("./models/scissors");
+const connectToMongoDB = require("./config/db");
 const sessionMiddleware = require("./middlewares/sessionMiddleware"); // Import session middleware
 const { saveToSession } = require("./helpers");
 const User = require("./models/userModel");
 
 const app = express();
+
+// Serving static files
+app.use(express.static(path.join(__dirname, "public")));
 
 //set up and connect the ejs folder
 app.set("view engine", "ejs");
@@ -28,6 +30,7 @@ app.set("views", path.join(__dirname, "views"));
 app.use(sessionMiddleware);
 
 //set app for url parameters
+app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 // Logging middleware
@@ -197,30 +200,30 @@ app.get("/", async (req, res) => {
 });
 
 // Generate QR code and provide download option
-app.get("/qr/:scissors", async (req, res) => {
+app.post("/qr", async (req, res) => {
   try {
-    const scissor = await scissors.findOne({ shortUrl: req.params.scissors });
-
-    // When the short URL doesn't exist
-    if (scissor === null) {
-      return res.status(404).send("Short URL not found");
-    }
-
-    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(
-      scissor.fullUrl
-    )}&size=300x300`;
-
-    const response = await axios.get(qrCodeUrl, { responseType: "stream" });
-
-    // Set the response headers for downloading the QR code image
-    res.setHeader("Content-Type", "image/png");
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename=${scissor.shortUrl}.png`
+    const { url } = req.body;
+    QRCode.toDataURL(
+      url,
+      {
+        errorCorrectionLevel: "H",
+        type: "image/png",
+        margin: 4,
+        scale: 4,
+        // color: {
+        //   dark: "#333333",
+        //   light: "#3498db",
+        // },
+      },
+      (err, dataURI) => {
+        if (err) {
+          throw new Error("Error generating QR code for, " + url);
+        }
+        return res
+          .status(201)
+          .json({ status: "success", data: { url: dataURI } });
+      }
     );
-
-    // Pipe the image stream to the response object
-    response.data.pipe(res);
   } catch (error) {
     console.error("Error generating QR code:", error);
     res.status(500).send("Failed to generate QR code");

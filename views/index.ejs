@@ -79,6 +79,7 @@
           </div>
       <button type="submit" class="btn btn-primary qr-button" style="margin-bottom: 20px; background-color: #f00; border: #f00;">Generate QR Code</button>
     </form>
+    <div id="qrCode"></div>
   </div>
 
 <div id="page-content">
@@ -170,27 +171,30 @@
 
 <!-- JavaScript code for QR code generation -->
 <script>
-    document.getElementById('qrForm').addEventListener('submit', function (event) {
-      event.preventDefault(); // Prevent the form from submitting normally
-  
-      // Get the action URL from the form
-    //   const action = this.getAttribute('action');
+    function downloadQRCode() {
+        const downloadLink = document.createElement("a");
+        const qrcodeImg = document.getElementById("qrcodeImg");
+        downloadLink.href = qrcodeImg.src;
+        downloadLink.download = "qrCode.png";
+        downloadLink.click();
+    }
+    const qrcode = document.getElementById("qrCode");
+    document.getElementById('qrForm').addEventListener('submit', async function (event) {
+      try {
+        event.preventDefault(); // Prevent the form from submitting normally
 
-      const inputUrl = document.getElementById("urlInput")
-      console.log(inputUrl.value)
-
-      const action = `http://localhost:8000/qr/${inputUrl.value}`;
-  
-      // Create a visible iframe element to trigger the download
-      const iframe = document.createElement('iframe');
-      iframe.style.display = 'block';
-      iframe.src = action;
-      document.body.appendChild(iframe);
-  
-      // Remove the iframe after the download is triggered
-    //   iframe.onload = function () {
-    //     document.body.removeChild(iframe);
-    //   };
+        const inputUrl = document.getElementById("urlInput")
+        const action = await fetch("/qr", {method: "POST",body: JSON.stringify({url: inputUrl.value}), headers: {"Content-Type": "application/json"}})
+        const data = await action.json();
+        const resultHTML = `
+          <img src=${data.data.url} id="qrcodeImg" alt="QR code">
+          <button type="button" onclick="downloadQRCode()">Download QR code</button>
+        `;
+      qrcode.innerHTML = "";
+      qrcode.insertAdjacentHTML("afterbegin", resultHTML);
+      } catch (error) {
+        console.log(error)
+      }
     });
   </script>
 
