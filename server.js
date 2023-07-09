@@ -315,7 +315,7 @@ app.delete("/urls/:shortUrl", async (req, res) => {
 });
 
 //mongodb should be connected before server starts
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 8000;
 connectToMongoDB()
   .then(() => {
     console.log("Connection to MongoDB is successful.");
